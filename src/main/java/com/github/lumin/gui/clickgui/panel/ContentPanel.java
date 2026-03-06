@@ -762,7 +762,12 @@ public class ContentPanel implements IComponent {
     public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks, float alpha) {
         float guiScale = ClickGui.INSTANCE.scale.getValue().floatValue();
         float radius = guiScale * 20f;
-        BlurRenderer.getInstance().drawBlur(x, y, this.width * guiScale, this.height * guiScale, 0, radius, radius, 0, ClickGui.INSTANCE.blurStrength.getValue().floatValue());
+
+        if (ClickGui.INSTANCE.backgroundBlur.getValue() && ClickGui.INSTANCE.blurMode.is("仅侧边栏")) {
+            BlurRenderer.INSTANCE.drawBlur(x, y, this.width * guiScale, this.height * guiScale, 0, radius, radius, 0, ClickGui.INSTANCE.blurStrength.getValue().floatValue());
+        }
+
+        set.bottomRoundRect().addRoundRect(x, y, this.width * guiScale, this.height * guiScale, 0, radius, radius, 0, new Color(0, 0, 0, 25));
 
         targetState = (isSettingsActive() && !this.closeSettingsRequested) ? 1 : 0;
 

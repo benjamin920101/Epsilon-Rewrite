@@ -29,14 +29,7 @@ import java.util.OptionalInt;
 
 public class BlurRenderer implements AutoCloseable {
 
-    private static BlurRenderer INSTANCE;
-
-    public static BlurRenderer getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new BlurRenderer();
-        }
-        return INSTANCE;
-    }
+    public static final BlurRenderer INSTANCE = new BlurRenderer();
 
     private final Minecraft mc = Minecraft.getInstance();
     private final List<RenderTarget> targets = new ArrayList<>();
@@ -66,7 +59,7 @@ public class BlurRenderer implements AutoCloseable {
         buffer.flip();
 
         quadBuffer = RenderSystem.getDevice().createBuffer(
-                () -> "Blur Quad",
+                () -> "Lumin Blur",
                 GpuBuffer.USAGE_VERTEX,
                 buffer
         );
