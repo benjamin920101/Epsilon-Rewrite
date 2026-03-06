@@ -109,7 +109,7 @@ public class BlurRenderer implements AutoCloseable {
         outputTarget = new TextureTarget("Blur Output", width, height, false, false);
     }
 
-    public RenderTarget blur(float radius, boolean outputToScreen) {
+    public RenderTarget blur(float radius) {
         if (radius <= 0) return null;
 
         int width = mc.getWindow().getWidth();
@@ -118,7 +118,14 @@ public class BlurRenderer implements AutoCloseable {
 
         if (targets.isEmpty()) return null;
 
-        int passes = Mth.clamp((int) radius, 1, targets.size());
+        // Strategy:
+        // Pass 1: radius 0-4
+        // Pass 2: radius 4-8
+        // Pass 3: radius 8-12
+        float passInterval = 4.0f;
+        int passes = Mth.clamp((int) Math.ceil(radius / passInterval), 1, targets.size());
+
+        float offset = Math.max(1.0f, radius / passes);
 
         RenderTarget mainTarget = mc.getMainRenderTarget();
 
@@ -140,7 +147,7 @@ public class BlurRenderer implements AutoCloseable {
             RenderTarget source = mainTarget;
             for (int i = 0; i < passes; i++) {
                 RenderTarget dest = targets.get(i);
-                renderPass(source, dest, i, true, radius, projectionSlice);
+                renderPass(source, dest, i, true, offset, projectionSlice);
                 source = dest;
             }
 
@@ -148,11 +155,11 @@ public class BlurRenderer implements AutoCloseable {
             for (int i = passes - 1; i >= 0; i--) {
                 RenderTarget dest;
                 if (i == 0) {
-                    dest = outputToScreen ? mainTarget : outputTarget;
+                    dest = outputTarget;
                 } else {
                     dest = targets.get(i - 1);
                 }
-                renderPass(source, dest, i, false, radius, projectionSlice);
+                renderPass(source, dest, i, false, offset, projectionSlice);
                 source = dest;
             }
         }
@@ -160,11 +167,7 @@ public class BlurRenderer implements AutoCloseable {
         RenderSystem.restoreProjectionMatrix();
 
 
-        return outputToScreen ? null : outputTarget;
-    }
-
-    public void blur(float radius) {
-        blur(radius, true);
+        return outputTarget;
     }
 
     public void drawBlur(float x, float y, float width, float height, float radius, float blurRadius) {
@@ -174,7 +177,7 @@ public class BlurRenderer implements AutoCloseable {
     public void drawBlur(float x, float y, float width, float height, float rTL, float rTR, float rBR, float rBL, float blurRadius) {
         if (blurRadius <= 0) return;
 
-        RenderTarget blurred = blur(blurRadius, false);
+        RenderTarget blurred = blur(blurRadius);
         if (blurred == null) return;
 
         int screenW = mc.getWindow().getWidth();
@@ -263,10 +266,9 @@ public class BlurRenderer implements AutoCloseable {
         buf.putFloat(r4);
     }
 
-    private void renderPass(RenderTarget source, RenderTarget dest, int level, boolean isDown, float totalRadius, GpuBufferSlice projectionSlice) {
+    private void renderPass(RenderTarget source, RenderTarget dest, int level, boolean isDown, float offset, GpuBufferSlice projectionSlice) {
         float w = source.width;
         float h = source.height;
-        float offset = 1.0f + (totalRadius * 0.2f); // Adjusted scaling
 
         ByteBuffer uniformBuf = MemoryUtil.memAlloc(32);
         // uHalfTexelSize (0.5 / width, 0.5 / height)
