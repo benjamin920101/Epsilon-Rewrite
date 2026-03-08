@@ -46,7 +46,9 @@ public class AutoAccount extends Module {
         PVPHub,
         SelectingMode,
         InGame,
-        GameEnd
+        GameEnd,
+        ReturningToHub,
+        SigningIn
     }
 
     @Override
@@ -208,13 +210,39 @@ public class AutoAccount extends Module {
                 mc.options.keyAttack.setDown(false);
 
                 if (gamesPlayed >= 10) {
-                    ChatUtils.addChatMessage("已完成10局游戏，自动停止。");
-                    toggle(); // 关闭模块
+                    ChatUtils.addChatMessage("已完成10局游戏，正在返回大厅签到...");
+                    mc.player.connection.sendCommand("hub");
+                    state = State.ReturningToHub;
+                    timer.reset();
                 } else {
                     // 重置状态，准备下一局
                     if (timer.passedMillise(3000)) { // 等待3秒返回大厅或继续
                         state = State.WaitingForPVPHub;
                         timer.reset();
+                    }
+                }
+            }
+            case ReturningToHub -> {
+                if (isScoreboardContains("大厅")) {
+                    if (timer.passedMillise(1000)) {
+                        mc.player.connection.sendCommand("qd");
+                        state = State.SigningIn;
+                        timer.reset();
+                    }
+                }
+            }
+            case SigningIn -> {
+                if (mc.player.containerMenu instanceof ChestMenu chestMenu) {
+                    if (timer.passedMillise(500)) {
+                        for (int i = 0; i < chestMenu.slots.size(); i++) {
+                            ItemStack stack = chestMenu.getSlot(i).getItem();
+                            if (stack.getHoverName().getString().contains("第一天")) {
+                                mc.gameMode.handleInventoryMouseClick(chestMenu.containerId, i, 0, ClickType.PICKUP, mc.player);
+                                ChatUtils.addChatMessage("已自动签到，模块关闭。");
+                                toggle();
+                                return;
+                            }
+                        }
                     }
                 }
             }
