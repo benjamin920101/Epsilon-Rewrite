@@ -3,8 +3,9 @@ package com.github.lumin.modules.impl.combat;
 import com.github.lumin.modules.Category;
 import com.github.lumin.modules.Module;
 import com.github.lumin.settings.impl.BoolSetting;
+import com.github.lumin.settings.impl.EnumSetting;
 import com.github.lumin.settings.impl.IntSetting;
-import com.github.lumin.settings.impl.ModeSetting;
+import com.github.lumin.utils.math.MathUtils;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -14,30 +15,28 @@ public class AutoClicker extends Module {
 
     public static final AutoClicker INSTANCE = new AutoClicker();
 
-    private final ModeSetting mode = modeSetting("模式", "1.8", new String[]{"1.8", "1.9+"});
-    private final IntSetting minCPS = intSetting("最小CPS", 8, 1, 20, 1, () -> mode.is("1.8"));
-    private final IntSetting maxCPS = intSetting("最大CPS", 12, 1, 20, 1, () -> mode.is("1.8"));
-    private final BoolSetting jitter = boolSetting("抖动", false, () -> mode.is("1.8"));
-    private final BoolSetting autoAttack = boolSetting("自动攻击", false);
+    private final EnumSetting<Mode> mode = enumSetting("Mode", Mode.VERSION_ABOVE_1_9);
+    private final IntSetting minCPS = intSetting("MinCPS", 8, 1, 20, 1, () -> mode.is("1.8"));
+    private final IntSetting maxCPS = intSetting("MaxCPS", 12, 1, 20, 1, () -> mode.is("1.8"));
+    private final BoolSetting jitter = boolSetting("Jitter", false, () -> mode.is("1.8"));
+    private final BoolSetting autoAttack = boolSetting("AutoAttack", false);
 
-    private final IntSetting minDelay = intSetting("最小延迟", 100, 0, 500, 10, () -> mode.is("1.9+"));
-    private final IntSetting maxDelay = intSetting("最大延迟", 200, 0, 500, 10, () -> mode.is("1.9+"));
+    private final IntSetting minDelay = intSetting("MinDelay", 100, 0, 500, 10, () -> mode.is("1.9+"));
+    private final IntSetting maxDelay = intSetting("MaxDelay", 200, 0, 500, 10, () -> mode.is("1.9+"));
 
     private long lastClickTime = 0;
     private long nextDelay = 0;
     private long readyTime = 0;
 
-    public AutoClicker() {
-        super("连点器", "AutoClicker", Category.COMBAT);
+    private AutoClicker() {
+        super("AutoClicker", Category.COMBAT);
     }
 
     @SubscribeEvent
     public void onTick(ClientTickEvent.Pre event) {
         if (nullCheck()) return;
 
-        // Check if left mouse button is held down
         boolean shouldClick = mc.mouseHandler.isLeftPressed();
-
         if (autoAttack.getValue() && mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.ENTITY) {
             shouldClick = true;
         }
@@ -64,18 +63,12 @@ public class AutoClicker extends Module {
                 }
             } else {
                 if (System.currentTimeMillis() - lastClickTime >= nextDelay) {
-                    // Perform click
                     performClick();
-
-                    // Update last click time
                     lastClickTime = System.currentTimeMillis();
-
-                    // Calculate next delay based on CPS
                     updateNextDelay();
                 }
             }
         } else {
-            // Reset delay if not clicking
             lastClickTime = 0;
             readyTime = 0;
         }
@@ -96,17 +89,22 @@ public class AutoClicker extends Module {
     }
 
     private void updateNextDelay() {
-        int min = minCPS.getValue();
-        int max = maxCPS.getValue();
-        if (min > max) {
-            int temp = min;
-            min = max;
-            max = temp;
+        nextDelay = 1000 / MathUtils.getRandom(minCPS.getValue(), maxCPS.getValue());
+    }
+
+    private enum Mode {
+        VERSION_1_8("1.8"),
+        VERSION_ABOVE_1_9("1.9+");
+
+        public final String name;
+
+        Mode(String name) {
+            this.name = name;
         }
 
-        // CPS to delay (ms)
-        // Add some randomness
-        double cps = min + (Math.random() * (max - min));
-        nextDelay = (long) (1000 / cps);
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 }

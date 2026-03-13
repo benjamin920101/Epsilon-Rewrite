@@ -8,10 +8,10 @@ public class JumpCooldown extends Module {
 
     public static final JumpCooldown INSTANCE = new JumpCooldown();
 
-    public JumpCooldown() {
-        super("跳跃冷却", "JumpCooldown", Category.PLAYER);
+    private JumpCooldown() {
+        super("JumpCooldown", Category.PLAYER);
     }
 
-    public final IntSetting cooldown = intSetting("冷却时间", 0, 0, 9, 1);
+    public final IntSetting cooldown = intSetting("Cooldown", 0, 0, 9, 1);
 
 }

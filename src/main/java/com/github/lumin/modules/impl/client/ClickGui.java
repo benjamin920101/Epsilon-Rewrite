@@ -6,7 +6,7 @@ import com.github.lumin.modules.Module;
 import com.github.lumin.settings.impl.BoolSetting;
 import com.github.lumin.settings.impl.ColorSetting;
 import com.github.lumin.settings.impl.DoubleSetting;
-import com.github.lumin.settings.impl.ModeSetting;
+import com.github.lumin.settings.impl.EnumSetting;
 
 import java.awt.*;
 
@@ -14,17 +14,17 @@ public class ClickGui extends Module {
 
     public static final ClickGui INSTANCE = new ClickGui();
 
-    public ClickGui() {
-        super("控制面板", "ClickGui", Category.CLIENT);
+    private ClickGui() {
+        super("ClickGui", Category.CLIENT);
     }
 
-    public final DoubleSetting scale = doubleSetting("界面缩放", 1.0, 0.5, 2.0, 0.05);
-    public final ColorSetting shadowColor = colorSetting("阴影颜色", new Color(0, 0, 0, 113));
+    public final DoubleSetting scale = doubleSetting("Scale", 1.0, 0.5, 2.0, 0.05);
+    public final ColorSetting shadowColor = colorSetting("ShadowColor", new Color(0, 0, 0, 113));
 
-    public final BoolSetting backgroundBlackColor = boolSetting("黑色背景", true);
-    public final BoolSetting backgroundBlur = boolSetting("背景模糊", true);
-    public final DoubleSetting blurStrength = doubleSetting("模糊强度", 10.5, 1.0, 15, 0.5, backgroundBlur::getValue);
-    public final ModeSetting blurMode = modeSetting("模糊方式", "全屏", new String[]{"全屏", "仅侧边栏"}, backgroundBlur::getValue);
+    public final BoolSetting backgroundBlackColor = boolSetting("BackgroundBlackColor", true);
+    private final BoolSetting backgroundBlur = boolSetting("BackgroundBlur", true);
+    private final DoubleSetting blurStrength = doubleSetting("BlurStrength", 10.5, 1.0, 15, 0.5, backgroundBlur::getValue);
+    private final EnumSetting<BlurMode> blurMode = enumSetting("BlurMode", BlurMode.FullScreen, backgroundBlur::getValue);
 
     @Override
     protected void onEnable() {
@@ -38,14 +38,26 @@ public class ClickGui extends Module {
             mc.setScreen(null);
         }
     }
-}
 
-//    public static Color getMainColor() {
-//        return INSTANCE.mainColor.getValue();
-//    }
-//
-//    public static Color getSecondColor() {
-//        return INSTANCE.secondColor.getValue();
-//    }
-//
-//}
+    public boolean shouldBlur() {
+        return backgroundBlur.getValue();
+    }
+
+    public boolean isFullScreenBlur() {
+        return shouldBlur() && blurMode.is(BlurMode.FullScreen);
+    }
+
+    public boolean isSidebarBlur() {
+        return shouldBlur() && blurMode.is(BlurMode.OnlySideBar);
+    }
+
+    public float getBlurStrength() {
+        return blurStrength.getValue().floatValue();
+    }
+
+    private enum BlurMode {
+        FullScreen,
+        OnlySideBar,
+    }
+
+}

@@ -13,6 +13,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import java.util.List;
 
 public class ModuleManager {
+
     private List<Module> modules;
 
     public ModuleManager() {
@@ -32,8 +33,6 @@ public class ModuleManager {
                 KillAura.INSTANCE,
 
                 // Player
-                QQPhoneSearch.INSTANCE,
-                PhoneSpammer.INSTANCE,
                 AutoAccount.INSTANCE,
                 BreakCooldown.INSTANCE,
                 Disabler.INSTANCE,
@@ -47,7 +46,6 @@ public class ModuleManager {
                 // Render
                 ESP.INSTANCE,
                 FullBright.INSTANCE,
-                Glow.INSTANCE,
                 HUD.INSTANCE,
                 ModuleList.INSTANCE,
                 Nametags.INSTANCE,

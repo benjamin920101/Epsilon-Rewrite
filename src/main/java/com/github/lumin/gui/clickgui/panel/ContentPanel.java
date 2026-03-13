@@ -1,9 +1,9 @@
 package com.github.lumin.gui.clickgui.panel;
 
-import com.github.lumin.graphics.renderers.BlurRenderer;
 import com.github.lumin.graphics.renderers.RectRenderer;
 import com.github.lumin.graphics.renderers.RoundRectRenderer;
 import com.github.lumin.graphics.renderers.TextRenderer;
+import com.github.lumin.graphics.shaders.BlurShader;
 import com.github.lumin.graphics.text.StaticFontLoader;
 import com.github.lumin.gui.IComponent;
 import com.github.lumin.gui.clickgui.component.ModuleComponent;
@@ -763,8 +763,8 @@ public class ContentPanel implements IComponent {
         float guiScale = ClickGui.INSTANCE.scale.getValue().floatValue();
         float radius = guiScale * 20f;
 
-        if (ClickGui.INSTANCE.backgroundBlur.getValue() && ClickGui.INSTANCE.blurMode.is("仅侧边栏")) {
-            BlurRenderer.INSTANCE.drawBlur(x, y, this.width * guiScale, this.height * guiScale, 0, radius, radius, 0, ClickGui.INSTANCE.blurStrength.getValue().floatValue());
+        if (ClickGui.INSTANCE.isSidebarBlur()) {
+            BlurShader.INSTANCE.drawBlur(x, y, this.width * guiScale, this.height * guiScale, 0, radius, radius, 0, ClickGui.INSTANCE.getBlurStrength());
         }
 
         set.bottomRoundRect().addRoundRect(x, y, this.width * guiScale, this.height * guiScale, 0, radius, radius, 0, new Color(0, 0, 0, 25));

@@ -1,6 +1,6 @@
 package com.github.lumin.graphics;
 
-import com.github.lumin.utils.resources.ResourceLocationUtils;
+import com.github.lumin.assets.resources.ResourceLocationUtils;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
@@ -108,22 +108,6 @@ public class LuminRenderPipelines {
             .withCull(false)
             .build();
 
-    private final static RenderPipeline.Snippet RAIN_SNIPPET = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
-            .withUniform("RainInfo", UniformType.UNIFORM_BUFFER)
-            .buildSnippet();
-
-    public final static RenderPipeline RAIN = RenderPipeline.builder(RAIN_SNIPPET)
-            .withLocation(ResourceLocationUtils.getIdentifier("pipelines/rain"))
-            .withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS)
-            .withVertexShader(ResourceLocationUtils.getIdentifier("rain"))
-            .withFragmentShader(ResourceLocationUtils.getIdentifier("rain"))
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-            .withDepthWrite(false)
-            .withSampler("Sampler0")
-            .withBlend(BlendFunction.TRANSLUCENT)
-            .withCull(false)
-            .build();
-
     public static void onRegisterRenderPipelines(RegisterRenderPipelinesEvent event) {
         event.registerPipeline(RECTANGLE);
         event.registerPipeline(TTF_FONT);
@@ -133,7 +117,6 @@ public class LuminRenderPipelines {
         event.registerPipeline(TEXTURE);
         event.registerPipeline(BLUR_DOWN);
         event.registerPipeline(BLUR_UP);
-        event.registerPipeline(RAIN);
     }
 
 }

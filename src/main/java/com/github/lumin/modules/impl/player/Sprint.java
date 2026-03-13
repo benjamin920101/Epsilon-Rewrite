@@ -8,8 +8,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 public class Sprint extends Module {
     public static final Sprint INSTANCE = new Sprint();
 
-    public Sprint() {
-        super("疾跑", "Sprint", Category.PLAYER);
+    private Sprint() {
+        super("Sprint", Category.PLAYER);
     }
 
     @SubscribeEvent

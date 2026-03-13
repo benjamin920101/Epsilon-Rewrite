@@ -8,10 +8,10 @@ public class BreakCooldown extends Module {
 
     public static final BreakCooldown INSTANCE = new BreakCooldown();
 
-    public BreakCooldown() {
-        super("挖掘延迟", "BreakCooldown", Category.PLAYER);
+    private BreakCooldown() {
+        super("BreakCooldown", Category.PLAYER);
     }
 
-    public final IntSetting cooldown = intSetting("冷却时间", 0, 0, 5, 1);
+    public final IntSetting cooldown = intSetting("Cooldown", 0, 0, 5, 1);
 
 }

@@ -12,8 +12,7 @@ import java.util.List;
 
 public class Module {
 
-    private final String cnName;
-    private final String enName;
+    private final String name;
 
     public Category category;
 
@@ -29,9 +28,8 @@ public class Module {
 
     protected static final Minecraft mc = Minecraft.getInstance();
 
-    public Module(String cnName, String enName, Category category) {
-        this.cnName = cnName;
-        this.enName = enName;
+    public Module(String name, Category category) {
+        this.name = name;
         this.category = category;
     }
 
@@ -56,7 +54,7 @@ public class Module {
 
             onEnable();
 
-            Lumin.LOGGER.info("{} 已启用", cnName);
+            Lumin.LOGGER.info("{} 已启用", name);
         } else {
             try {
                 NeoForge.EVENT_BUS.unregister(this);
@@ -65,7 +63,7 @@ public class Module {
 
             onDisable();
 
-            Lumin.LOGGER.info("{} 已禁用", cnName);
+            Lumin.LOGGER.info("{} 已禁用", name);
         }
     }
 
@@ -113,75 +111,75 @@ public class Module {
     }
 
     public String getName() {
-        return cnName;
+        return name;
     }
 
     public String getCnName() {
-        return cnName;
+        return name;
     }
 
     public String getDescription() {
-        return enName;
+        return name;
     }
 
     public String getChineseDescription() {
-        return enName;
+        return name;
     }
 
-    protected IntSetting intSetting(String chineseName, int defaultValue, int min, int max, int step, Setting.Dependency dependency) {
-        return addSetting(new IntSetting(chineseName, defaultValue, min, max, step, dependency, false));
+    protected IntSetting intSetting(String name, int defaultValue, int min, int max, int step, Setting.Dependency dependency) {
+        return addSetting(new IntSetting(name, this, defaultValue, min, max, step, dependency, false));
     }
 
-    protected IntSetting intSetting(String chineseName, int defaultValue, int min, int max, int step, Setting.Dependency dependency, boolean percentageMode) {
-        return addSetting(new IntSetting(chineseName, defaultValue, min, max, step, dependency, percentageMode));
+    protected IntSetting intSetting(String name, int defaultValue, int min, int max, int step, Setting.Dependency dependency, boolean percentageMode) {
+        return addSetting(new IntSetting(name, this, defaultValue, min, max, step, dependency, percentageMode));
     }
 
-    protected IntSetting intSetting(String chineseName, int defaultValue, int min, int max, int step) {
-        return addSetting(new IntSetting(chineseName, defaultValue, min, max, step));
+    protected IntSetting intSetting(String name, int defaultValue, int min, int max, int step) {
+        return addSetting(new IntSetting(name, this, defaultValue, min, max, step));
     }
 
-    protected BoolSetting boolSetting(String chineseName, boolean defaultValue, Setting.Dependency dependency) {
-        return addSetting(new BoolSetting(chineseName, defaultValue, dependency));
+    protected BoolSetting boolSetting(String name, boolean defaultValue, Setting.Dependency dependency) {
+        return addSetting(new BoolSetting(name, this, defaultValue, dependency));
     }
 
-    protected BoolSetting boolSetting(String chineseName, boolean defaultValue) {
-        return addSetting(new BoolSetting(chineseName, defaultValue));
+    protected BoolSetting boolSetting(String name, boolean defaultValue) {
+        return addSetting(new BoolSetting(name, this, defaultValue));
     }
 
-    protected DoubleSetting doubleSetting(String chineseName, double defaultValue, double min, double max, double step, Setting.Dependency dependency) {
-        return addSetting(new DoubleSetting(chineseName, defaultValue, min, max, step, dependency, false));
+    protected DoubleSetting doubleSetting(String name, double defaultValue, double min, double max, double step, Setting.Dependency dependency) {
+        return addSetting(new DoubleSetting(name, this, defaultValue, min, max, step, dependency, false));
     }
 
-    protected DoubleSetting doubleSetting(String chineseName, double defaultValue, double min, double max, double step, Setting.Dependency dependency, boolean percentageMode) {
-        return addSetting(new DoubleSetting(chineseName, defaultValue, min, max, step, dependency, percentageMode));
+    protected DoubleSetting doubleSetting(String name, double defaultValue, double min, double max, double step, Setting.Dependency dependency, boolean percentageMode) {
+        return addSetting(new DoubleSetting(name, this, defaultValue, min, max, step, dependency, percentageMode));
     }
 
-    protected DoubleSetting doubleSetting(String chineseName, double defaultValue, double min, double max, double step) {
-        return addSetting(new DoubleSetting(chineseName, defaultValue, min, max, step));
+    protected DoubleSetting doubleSetting(String name, double defaultValue, double min, double max, double step) {
+        return addSetting(new DoubleSetting(name, this, defaultValue, min, max, step));
     }
 
-    protected StringSetting stringSetting(String chineseName, String defaultValue, Setting.Dependency dependency) {
-        return addSetting(new StringSetting(chineseName, defaultValue, dependency));
+    protected StringSetting stringSetting(String name, String defaultValue, Setting.Dependency dependency) {
+        return addSetting(new StringSetting(name, this, defaultValue, dependency));
     }
 
-    protected StringSetting stringSetting(String chineseName, String defaultValue) {
-        return addSetting(new StringSetting(chineseName, defaultValue));
+    protected StringSetting stringSetting(String name, String defaultValue) {
+        return addSetting(new StringSetting(name, this, defaultValue));
     }
 
-    protected ModeSetting modeSetting(String chineseName, String defaultValue, String[] modes, Setting.Dependency dependency) {
-        return addSetting(new ModeSetting(chineseName, defaultValue, modes, dependency));
+    protected <E extends Enum<E>> EnumSetting<E> enumSetting(String name, E defaultValue, Setting.Dependency dependency) {
+        return addSetting(new EnumSetting<>(name, this, defaultValue, dependency));
     }
 
-    protected ModeSetting modeSetting(String chineseName, String defaultValue, String[] modes) {
-        return addSetting(new ModeSetting(chineseName, defaultValue, modes));
+    protected <E extends Enum<E>> EnumSetting<E> enumSetting(String name, E defaultValue) {
+        return addSetting(new EnumSetting<>(name, this, defaultValue, () -> true));
     }
 
-    protected ColorSetting colorSetting(String chineseName, Color defaultValue, Setting.Dependency dependency) {
-        return addSetting(new ColorSetting(chineseName, defaultValue, dependency));
+    protected ColorSetting colorSetting(String name, Color defaultValue, Setting.Dependency dependency) {
+        return addSetting(new ColorSetting(name, this, defaultValue, dependency));
     }
 
-    protected ColorSetting colorSetting(String chineseName, Color defaultValue) {
-        return addSetting(new ColorSetting(chineseName, defaultValue));
+    protected ColorSetting colorSetting(String name, Color defaultValue) {
+        return addSetting(new ColorSetting(name, this, defaultValue));
     }
 
 }

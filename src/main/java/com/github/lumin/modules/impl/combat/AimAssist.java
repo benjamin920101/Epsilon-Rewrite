@@ -4,7 +4,7 @@ import com.github.lumin.modules.Category;
 import com.github.lumin.modules.Module;
 import com.github.lumin.settings.impl.BoolSetting;
 import com.github.lumin.settings.impl.DoubleSetting;
-import com.github.lumin.settings.impl.ModeSetting;
+import com.github.lumin.settings.impl.EnumSetting;
 import com.github.lumin.utils.rotation.RotationUtils;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.util.Mth;
@@ -25,23 +25,23 @@ import java.util.List;
 public class AimAssist extends Module {
     public static final AimAssist INSTANCE = new AimAssist();
 
-    public ModeSetting mode = modeSetting("平滑模式", "快速", new String[]{"快速", "平稳"});
-    public DoubleSetting range = doubleSetting("目标距离", 4.2, 1.0, 8.0, 0.1);
-    public DoubleSetting speed = doubleSetting("旋转速度", 10.0, 1.0, 180.0, 1.0);
-    public DoubleSetting strength = doubleSetting("插值强度", 0.1, 0.01, 1.0, 0.01);
-    public BoolSetting ignoreScreen = boolSetting("屏幕打开时忽略", true);
-    public BoolSetting ignoreInventory = boolSetting("物品栏打开时忽略", true);
-    public BoolSetting player = boolSetting("瞄准玩家", true);
-    public BoolSetting mob = boolSetting("瞄准敌对生物", true);
-    public BoolSetting animal = boolSetting("瞄准动物", true);
-    public BoolSetting invisible = boolSetting("瞄准隐身实体", false);
+    public EnumSetting<SmoothMode> mode = enumSetting("Mode", SmoothMode.Fast);
+    public DoubleSetting range = doubleSetting("Range", 4.2, 1.0, 8.0, 0.1);
+    public DoubleSetting speed = doubleSetting("Speed", 10.0, 1.0, 180.0, 1.0);
+    public DoubleSetting strength = doubleSetting("Strength", 0.1, 0.01, 1.0, 0.01);
+    public BoolSetting ignoreScreen = boolSetting("IgnoreScreen", true);
+    public BoolSetting ignoreInventory = boolSetting("IgnoreInventory", true);
+    public BoolSetting player = boolSetting("Player", true);
+    public BoolSetting mob = boolSetting("Mob", true);
+    public BoolSetting animal = boolSetting("Animal", true);
+    public BoolSetting invisible = boolSetting("Invisible", false);
 
     private Vector2f targetRotation;
     private Vector2f playerRotation;
     private LivingEntity currentTarget;
 
-    public AimAssist() {
-        super("自动瞄准", "AimAssist", Category.COMBAT);
+    private AimAssist() {
+        super("AimAssist", Category.COMBAT);
     }
 
     @Override
@@ -60,7 +60,6 @@ public class AimAssist extends Module {
 
         playerRotation = new Vector2f(mc.player.getYRot(), mc.player.getXRot());
 
-        // Check ignore conditions
         if (ignoreScreen.getValue() && mc.screen != null) {
             targetRotation = null;
             return;
@@ -73,10 +72,7 @@ public class AimAssist extends Module {
         currentTarget = findTarget();
 
         if (currentTarget != null) {
-            // Calculate ideal rotation to target
             Vector2f idealRotation = RotationUtils.calculate(currentTarget, true, range.getValue());
-
-            // Process smoothing
             AngleSmooth smoother = getAngleSmooth();
             targetRotation = smoother.process(playerRotation, idealRotation);
         } else {
@@ -133,7 +129,7 @@ public class AimAssist extends Module {
         targets.sort(Comparator.comparingDouble(RotationUtils::getEyeDistanceToEntity));
 
         if (targets.isEmpty()) return null;
-        return targets.get(0);
+        return targets.getFirst();
     }
 
     private boolean isValidTarget(LivingEntity entity) {
@@ -150,13 +146,11 @@ public class AimAssist extends Module {
 
     private AngleSmooth getAngleSmooth() {
         return switch (mode.getValue()) {
-            case "快速" -> new LinearAngleSmooth(speed.getValue().floatValue());
-            case "平稳" -> new InterpolationAngleSmooth(strength.getValue().floatValue());
-            default -> null;
+            case SmoothMode.Fast -> new LinearAngleSmooth(speed.getValue().floatValue());
+            case SmoothMode.Stable -> new InterpolationAngleSmooth(strength.getValue().floatValue());
         };
     }
 
-    // Inner classes for Smoothing logic
     private interface AngleSmooth {
         Vector2f process(Vector2f current, Vector2f target);
     }
@@ -185,5 +179,10 @@ public class AimAssist extends Module {
 
             return new Vector2f(current.x + yawChange, current.y + pitchChange);
         }
+    }
+
+    public enum SmoothMode {
+        Fast,
+        Stable,
     }
 }

@@ -5,8 +5,8 @@ import com.github.lumin.modules.Category;
 import com.github.lumin.modules.Module;
 import com.github.lumin.settings.impl.BoolSetting;
 import com.github.lumin.settings.impl.DoubleSetting;
+import com.github.lumin.settings.impl.EnumSetting;
 import com.github.lumin.settings.impl.IntSetting;
-import com.github.lumin.settings.impl.ModeSetting;
 import com.github.lumin.utils.math.MathUtils;
 import com.github.lumin.utils.player.FindItemResult;
 import com.github.lumin.utils.player.InvUtils;
@@ -39,26 +39,26 @@ public class KillAura extends Module {
 
     public static final KillAura INSTANCE = new KillAura();
 
-    public KillAura() {
-        super("杀戮光环", "KillAura", Category.COMBAT);
+    private KillAura() {
+        super("KillAura", Category.COMBAT);
     }
 
-    public ModeSetting movefix = modeSetting("移动修正模式", "静默", new String[]{"静默", "严格"});
-    public ModeSetting targetMode = modeSetting("目标选择方式", "单个", new String[]{"单个", "切换", "多个"});
-    public DoubleSetting range = doubleSetting("最大攻击距离", 3.0, 1.0, 6.0, 0.01);
-    public DoubleSetting aimRange = doubleSetting("最大瞄准距离", 4.0, 1.0, 6.0, 0.1);
-    public IntSetting speed = intSetting("视角旋转速度", 10, 1, 10, 1);
-    public DoubleSetting fov = doubleSetting("生效视野角度", 360.0, 10.0, 360.0, 1.0);
-    public BoolSetting raytrace = boolSetting("视线验证", true);
-    public DoubleSetting wallsRange = doubleSetting("穿墙距离", 0.0, 0.0, 3.0, 0.1, () -> raytrace.getValue());
-    public BoolSetting cooldownATK = boolSetting("是否等待攻击冷却", false);
-    public BoolSetting esp = boolSetting("显示目标轮廓", false);
-    public DoubleSetting cps = doubleSetting("最小每秒攻击次数", 10.0, 1.0, 20.0, 1.0);
-    public DoubleSetting maxCps = doubleSetting("最大每秒攻击次数", 12, 1, 20, 1);
-    public BoolSetting player = boolSetting("攻击玩家", true);
-    public BoolSetting mob = boolSetting("攻击敌对生物", true);
-    public BoolSetting animal = boolSetting("攻击被动生物", true);
-    public BoolSetting Invisible = boolSetting("攻击隐身实体", true);
+    public EnumSetting<MoveFixMode> moveFix = enumSetting("MoveFixMode", MoveFixMode.Silent);
+    public EnumSetting<TargetMode> targetMode = enumSetting("TargetMode", TargetMode.Single);
+    public DoubleSetting range = doubleSetting("Range", 3.0, 1.0, 6.0, 0.01);
+    public DoubleSetting aimRange = doubleSetting("AimRange", 4.0, 1.0, 6.0, 0.1);
+    public IntSetting speed = intSetting("Speed", 10, 1, 10, 1);
+    public DoubleSetting fov = doubleSetting("FOV", 360.0, 10.0, 360.0, 1.0);
+    public BoolSetting raytrace = boolSetting("Raytrace", true);
+    public DoubleSetting wallsRange = doubleSetting("WallsRange", 0.0, 0.0, 3.0, 0.1, () -> raytrace.getValue());
+    public BoolSetting cooldownATK = boolSetting("CooldownATK", false);
+    public BoolSetting esp = boolSetting("ESP", false);
+    public DoubleSetting cps = doubleSetting("CPS", 10.0, 1.0, 20.0, 1.0);
+    public DoubleSetting maxCps = doubleSetting("MaxCPS", 12, 1, 20, 1);
+    public BoolSetting player = boolSetting("Player", true);
+    public BoolSetting mob = boolSetting("Mob", true);
+    public BoolSetting animal = boolSetting("Animal", true);
+    public BoolSetting Invisible = boolSetting("Invisible", true);
 
     public static LivingEntity target;
     public static List<LivingEntity> targets = new ArrayList<>();
@@ -87,12 +87,12 @@ public class KillAura extends Module {
             return;
         }
 
-        if (targetMode.is("单个")) {
+        if (targetMode.is("Single")) {
             target = targets.getFirst();
-        } else if (targetMode.is("切换")) {
+        } else if (targetMode.is("Switch")) {
             if (switchIndex >= targets.size()) switchIndex = 0;
             target = targets.get(switchIndex);
-        } else if (targetMode.is("多个")) {
+        } else if (targetMode.is("Multiple")) {
             target = targets.getFirst();
         }
 
@@ -100,7 +100,7 @@ public class KillAura extends Module {
 
         if (target != null) {
             float[] rotations = RotationUtils.getRotationsToEntity(target);
-            boolean silent = movefix.is("静默");
+            boolean silent = moveFix.is("Silent");
             Managers.ROTATION.setRotations(new Vector2f(rotations[0], rotations[1]), speed.getValue().floatValue(), MovementFix.ON, Priority.Medium);
         }
     }
@@ -130,7 +130,7 @@ public class KillAura extends Module {
             if (weapon.found()) {
                 InvUtils.swap(weapon.slot(), true);
             }
-            if (targetMode.is("多个")) {
+            if (targetMode.is("Multiple")) {
                 for (LivingEntity t : targets) {
                     if (RotationUtils.getEyeDistanceToEntity(t) <= range.getValue() && canAttackTarget(target) && mc.hitResult.getType() == HitResult.Type.ENTITY) {
                         doAttack();
@@ -140,8 +140,8 @@ public class KillAura extends Module {
             } else {
                 if (RotationUtils.getEyeDistanceToEntity(target) <= range.getValue() && canAttackTarget(target) && mc.hitResult.getType() == HitResult.Type.ENTITY && mc.crosshairPickEntity.is(target)) {
                     doAttack();
-                    if (targetMode.is("切换")) switchIndex++;
-                } else if (targetMode.is("切换")) {
+                    if (targetMode.is("Switch")) switchIndex++;
+                } else if (targetMode.is("Switch")) {
                     switchIndex++;
                 }
             }
@@ -220,4 +220,16 @@ public class KillAura extends Module {
 
         return RaytraceUtils.facingEnemy(mc.player, entity, rotation, range.getValue(), wallsRange.getValue());
     }
+
+    public enum MoveFixMode {
+        Silent,
+        Strict,
+    }
+
+    public enum TargetMode {
+        Single,
+        Switch,
+        Multiple,
+    }
+
 }

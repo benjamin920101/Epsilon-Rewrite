@@ -1,5 +1,6 @@
 package com.github.lumin;
 
+import com.github.lumin.assets.i18n.I18NFileGenerator;
 import com.github.lumin.managers.Managers;
 import com.github.lumin.utils.AuthUtils;
 import com.mojang.logging.LogUtils;
@@ -77,6 +78,7 @@ import org.slf4j.Logger;
 @Mod(value = Lumin.MODID, dist = Dist.CLIENT)
 @EventBusSubscriber(modid = Lumin.MODID, value = Dist.CLIENT)
 public class Lumin {
+
     public static final String MODID = "lumin";
     public static final Logger LOGGER = LogUtils.getLogger();
 
@@ -90,6 +92,8 @@ public class Lumin {
         LOGGER.info("Welcome to Lumin, Meow~");
 
         Managers.initManagers();
+
+        I18NFileGenerator.generate("lumin-config/empty.json");
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             Managers.CONFIG.saveNow();
