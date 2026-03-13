@@ -4,7 +4,7 @@
   "lumin.categories.player": "Player",
   "lumin.categories.render": "Render",
   "lumin.categories.world": "World",
-  "lumin.gui.gameaccount": "GameAccount",
+  "lumin.gui.gameaccount": "Account",
   "lumin.modules.aimassist": "AimAssist",
   "lumin.modules.aimassist.animal": "AimAnimals",
   "lumin.modules.aimassist.ignoreinventory": "IgnoreWhenInventoryOpen",
