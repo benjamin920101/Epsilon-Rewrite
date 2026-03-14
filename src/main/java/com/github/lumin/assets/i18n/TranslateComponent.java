@@ -1,6 +1,6 @@
 package com.github.lumin.assets.i18n;
 
-import com.github.lumin.managers.impl.TranslateManager;
+import com.github.lumin.assets.holders.TranslateHolder;
 import net.minecraft.client.resources.language.I18n;
 
 public class TranslateComponent {
@@ -23,7 +23,7 @@ public class TranslateComponent {
 
     public static TranslateComponent create(String prefix, String suffix) {
         TranslateComponent component = new TranslateComponent(prefix, suffix);
-        TranslateManager.INSTANCE.registerTranslateComponent(component);
+        TranslateHolder.INSTANCE.registerTranslateComponent(component);
         return component;
     }
 

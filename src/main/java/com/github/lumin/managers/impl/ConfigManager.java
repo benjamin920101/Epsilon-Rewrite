@@ -72,7 +72,7 @@ public class ConfigManager {
                 continue;
             }
 
-            JsonObject moduleObj = getObject(modulesObj, module.getCnName());
+            JsonObject moduleObj = getObject(modulesObj, module.getName());
             if (moduleObj == null) {
                 continue;
             }
@@ -184,7 +184,7 @@ public class ConfigManager {
             }
             moduleObj.add("settings", settingsObj);
 
-            modulesObj.add(module.getCnName(), moduleObj);
+            modulesObj.add(module.getName(), moduleObj);
         }
 
         return modulesObj;

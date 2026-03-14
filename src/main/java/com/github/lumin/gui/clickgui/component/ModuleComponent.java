@@ -150,7 +150,7 @@ public class ModuleComponent implements IComponent {
             float oldNameScale = 1.1f * guiScale;
             float oldDescScale = 0.62f * guiScale;
 
-            float oldNameW = set.font().getWidth(module.getName(), oldNameScale);
+            float oldNameW = set.font().getWidth(module.getTranslatedName(), oldNameScale);
             float oldDescW = set.font().getWidth(module.getDescription(), oldDescScale);
 
             float oldNameH = set.font().getHeight(oldNameScale);
@@ -159,7 +159,7 @@ public class ModuleComponent implements IComponent {
 
             float oldStartY = centerY - oldBlockH / 2.0f;
 
-            set.font().addText(module.getName(), centerX - oldNameW / 2.0f, oldStartY - 0.6f * guiScale, oldNameScale, new Color(255, 255, 255, oldAlphaInt));
+            set.font().addText(module.getTranslatedName(), centerX - oldNameW / 2.0f, oldStartY - 0.6f * guiScale, oldNameScale, new Color(255, 255, 255, oldAlphaInt));
             set.font().addText(module.getDescription(), centerX - oldDescW / 2.0f, oldStartY + oldNameH + 3 * guiScale - 0.2f * guiScale, oldDescScale, new Color(200, 200, 200, oldAlphaInt));
         }
 
@@ -174,7 +174,7 @@ public class ModuleComponent implements IComponent {
 
         float titleScale = 1.15f * guiScale * (0.5f + 0.5f * progress);
         float titleY = animY + padding - guiScale;
-        set.font().addText(module.getName(), animX + padding, titleY, titleScale, textColor);
+        set.font().addText(module.getTranslatedName(), animX + padding, titleY, titleScale, textColor);
 
         float titleH = set.font().getHeight(titleScale);
         float headerY = titleY - guiScale;

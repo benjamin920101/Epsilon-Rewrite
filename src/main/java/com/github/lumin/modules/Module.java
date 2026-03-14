@@ -1,6 +1,7 @@
 package com.github.lumin.modules;
 
 import com.github.lumin.Lumin;
+import com.github.lumin.assets.i18n.TranslateComponent;
 import com.github.lumin.settings.Setting;
 import com.github.lumin.settings.impl.*;
 import net.minecraft.client.Minecraft;
@@ -28,9 +29,13 @@ public class Module {
 
     protected static final Minecraft mc = Minecraft.getInstance();
 
+    public final TranslateComponent translateComponent;
+
     public Module(String name, Category category) {
         this.name = name;
         this.category = category;
+
+        translateComponent = TranslateComponent.create("modules", name.toLowerCase());
     }
 
     protected boolean nullCheck() {
@@ -114,8 +119,8 @@ public class Module {
         return name;
     }
 
-    public String getCnName() {
-        return name;
+    public String getTranslatedName() {
+        return translateComponent.getTranslatedName();
     }
 
     public String getDescription() {

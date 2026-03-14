@@ -253,7 +253,7 @@ public class ContentPanel implements IComponent {
 
         List<ModuleCard> visibleCards = new ArrayList<>();
         for (ModuleCard card : moduleCards) {
-            boolean matchesSearch = listSearchText.isEmpty() || card.module.getName().toLowerCase().startsWith(listSearchText.toLowerCase());
+            boolean matchesSearch = listSearchText.isEmpty() || card.module.getTranslatedName().toLowerCase().startsWith(listSearchText.toLowerCase());
             card.updateVisibility(matchesSearch);
             if (!matchesSearch && card.scaleAnimation.getValue() <= 0.01f) {
                 card.width = 0;
@@ -264,9 +264,12 @@ public class ContentPanel implements IComponent {
         }
 
         if (visibleCards.isEmpty() || lastListH <= 0.0f || lastListW <= 0.0f) {
-            listMaxScroll = listScrollOffset = listScrollTarget = 0.0f;
+            listMaxScroll = 0.0f;
+            listScrollOffset = 0.0f;
+            listScrollTarget = 0.0f;
             listDraggingScrollbar = false;
-            lastThumbY = lastThumbH = 0.0f;
+            lastThumbY = 0.0f;
+            lastThumbH = 0.0f;
             return;
         }
 
@@ -303,7 +306,7 @@ public class ContentPanel implements IComponent {
         Module expandingModule = settingsComponent != null ? settingsComponent.getModule() : null;
 
         for (ModuleCard card : moduleCards) {
-            boolean matchesSearch = listSearchText.isEmpty() || card.module.getName().toLowerCase().startsWith(listSearchText.toLowerCase());
+            boolean matchesSearch = listSearchText.isEmpty() || card.module.getTranslatedName().toLowerCase().startsWith(listSearchText.toLowerCase());
             card.updateVisibility(matchesSearch);
             if (!matchesSearch && card.scaleAnimation.getValue() <= 0.01f) {
                 card.width = 0;
@@ -734,7 +737,7 @@ public class ContentPanel implements IComponent {
 
             float nameScale = 1.1f * guiScale * scaleProgress;
             float maxNameWidth = rw - 14 * guiScale;
-            float nameWidth = text.getWidth(module.getName(), nameScale);
+            float nameWidth = text.getWidth(module.getTranslatedName(), nameScale);
             if (nameWidth > maxNameWidth && nameWidth > 0) nameScale *= maxNameWidth / nameWidth;
 
             float descScale = 0.62f * guiScale * scaleProgress;
@@ -748,7 +751,7 @@ public class ContentPanel implements IComponent {
             float startY = renderY + (rh - blockHeight) / 2f;
 
             int textAlpha = (int) (255 * alpha * scaleProgress);
-            text.addText(module.getName(), renderX + (rw - (Math.min(nameWidth, maxNameWidth))) / 2f, startY - 0.6f * guiScale, nameScale, new Color(255, 255, 255, textAlpha));
+            text.addText(module.getTranslatedName(), renderX + (rw - (Math.min(nameWidth, maxNameWidth))) / 2f, startY - 0.6f * guiScale, nameScale, new Color(255, 255, 255, textAlpha));
             text.addText(module.getDescription(), renderX + (rw - (Math.min(descWidth, maxDescWidth))) / 2f, startY + nameHeight + 3 * guiScale - 0.2f * guiScale, descScale, new Color(200, 200, 200, textAlpha));
         }
     }
