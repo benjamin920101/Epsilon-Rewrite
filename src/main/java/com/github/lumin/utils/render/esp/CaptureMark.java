@@ -1,6 +1,7 @@
-package com.github.lumin.utils.render;
+package com.github.lumin.utils.render.esp;
 
 import com.github.lumin.assets.resources.ResourceLocationUtils;
+import com.github.lumin.utils.render.ColorUtils;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
@@ -15,44 +16,44 @@ import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Util;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 import java.awt.*;
-import java.util.function.Function;
 
-public class TargetESPUtils {
+public class CaptureMark {
 
-    private static final Minecraft mc = Minecraft.getInstance();
+    private final Minecraft mc = Minecraft.getInstance();
 
     private static final Identifier CAPTUREMARK = ResourceLocationUtils.getIdentifier("textures/particles/target.png");
 
     private static final RenderPipeline TARGET_ICON_PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
-            .withLocation("pipeline/sakura_target_icon")
+            .withLocation("pipeline/target_icon")
             .withBlend(BlendFunction.TRANSLUCENT)
             .withCull(false)
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
             .withDepthWrite(false)
             .build();
 
-    private static final Function<Identifier, RenderType> TARGET_ICON_LAYER = Util.memoize(texture -> RenderType.create(
-            "sakura_target_icon",
+    private static final RenderType TARGET_ICON_LAYER = RenderType.create(
+            "target_icon",
             RenderSetup.builder(TARGET_ICON_PIPELINE)
-                    .withTexture("Sampler0", texture)
+                    .withTexture("Sampler0", CAPTUREMARK)
                     .sortOnUpload()
                     .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
                     .setOutputTarget(OutputTarget.MAIN_TARGET)
                     .createRenderSetup()
-    ));
+    );
 
-    private static float rotation = 0f;
+    private float rotation = 0f;
 
-    public static void drawCaptureMark(PoseStack poseStack, LivingEntity target, double espSize, double rotSpeed, double waveSpeed, Color color1, Color color2) {
+    public void update(double rotSpeed) {
         rotation -= (float) rotSpeed;
         if (rotation <= -360f) rotation += 360f;
+    }
 
+    public void render(PoseStack poseStack, LivingEntity target, double espSize, double waveSpeed, Color color1, Color color2) {
         Vec3 cam = mc.getEntityRenderDispatcher().camera.position();
         float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
 
@@ -84,7 +85,7 @@ public class TargetESPUtils {
         buffer.addVertex(matrix, size, size, 0).setUv(1, 1).setColor(c3.getRGB());
         buffer.addVertex(matrix, size, -size, 0).setUv(1, 0).setColor(c4.getRGB());
 
-        TARGET_ICON_LAYER.apply(CAPTUREMARK).draw(buffer.buildOrThrow());
+        TARGET_ICON_LAYER.draw(buffer.buildOrThrow());
 
         poseStack.popPose();
     }

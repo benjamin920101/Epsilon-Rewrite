@@ -5,7 +5,7 @@ import com.github.lumin.modules.Category;
 import com.github.lumin.modules.Module;
 import com.github.lumin.settings.impl.*;
 import com.github.lumin.utils.math.MathUtils;
-import com.github.lumin.utils.render.TargetESPUtils;
+import com.github.lumin.utils.render.esp.CaptureMark;
 import com.github.lumin.utils.rotation.MovementFix;
 import com.github.lumin.utils.rotation.Priority;
 import com.github.lumin.utils.rotation.RotationUtils;
@@ -71,6 +71,8 @@ public class KillAura extends Module {
 
     private int switchIndex = 0;
     private float attacks = 0;
+
+    private final CaptureMark captureMark = new CaptureMark();
 
     @Override
     protected void onDisable() {
@@ -140,8 +142,10 @@ public class KillAura extends Module {
         if (nullCheck() || !esp.getValue() || target == null) return;
 
         switch (espMode.getValue()) {
-            case CaptureMark ->
-                    TargetESPUtils.drawCaptureMark(event.getPoseStack(), target, espSize.getValue(), espRotSpeed.getValue(), waveSpeed.getValue(), espColor1.getValue(), espColor2.getValue());
+            case CaptureMark -> {
+                captureMark.update(espRotSpeed.getValue());
+                captureMark.render(event.getPoseStack(), target, espSize.getValue(), waveSpeed.getValue(), espColor1.getValue(), espColor2.getValue());
+            }
         }
 
     }
