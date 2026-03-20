@@ -106,7 +106,7 @@ public class ColorSettingComponent extends Component {
         if (!opened) return;
         float panelW = ColorPicker.preferredWidth(scale);
         float panelH = ColorPicker.preferredHeight(scale, setting.isAllowAlpha());
-        float gap = 5.0f * scale;
+        float gap = 40f * scale;
         float rightX = lastSwatchX + lastSwatchW + gap;
         float screenWidth = mc.getWindow().getGuiScaledWidth();
         boolean showOnRight = (rightX + panelW) <= screenWidth;
@@ -147,7 +147,7 @@ public class ColorSettingComponent extends Component {
         if (!ClickGui.INSTANCE.shouldBlur()) return;
         float panelW = ColorPicker.preferredWidth(scale);
         float panelH = ColorPicker.preferredHeight(scale, setting.isAllowAlpha());
-        float gap = 5.0f * scale;
+        float gap = 40f * scale;
         float rightX = lastSwatchX + lastSwatchW + gap;
         float screenWidth = mc.getWindow().getGuiScaledWidth();
         boolean showOnRight = (rightX + panelW) <= screenWidth;
