@@ -2,6 +2,7 @@ package com.github.lumin.gui.clickgui;
 
 import com.github.lumin.gui.clickgui.component.impl.ColorSettingComponent;
 import com.github.lumin.gui.clickgui.panel.Panel;
+import com.github.lumin.gui.element.ElementManager;
 import com.github.lumin.modules.impl.client.ClickGui;
 import com.github.lumin.utils.render.animation.Animation;
 import com.github.lumin.utils.render.animation.Easing;
@@ -33,15 +34,24 @@ public class ClickGuiScreen extends Screen {
     public void render(@NonNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         openAnimation.run(1f);
         panel.render(null, mouseX, mouseY, partialTick, openAnimation.getValue());
+        if (panel.isHudEditorActive()) {
+            ElementManager.INSTANCE.render(mouseX, mouseY);
+        }
     }
 
     @Override
     public boolean mouseClicked(@NonNull MouseButtonEvent event, boolean focused) {
+        if (panel.isHudEditorActive()) {
+            if (ElementManager.INSTANCE.mouseClicked(event.x(), event.y(), event.button())) return true;
+        }
         return panel.mouseClicked(event, focused) || super.mouseClicked(event, focused);
     }
 
     @Override
     public boolean mouseReleased(@NonNull MouseButtonEvent event) {
+        if (panel.isHudEditorActive()) {
+            ElementManager.INSTANCE.mouseReleased(event.x(), event.y(), event.button());
+        }
         return panel.mouseReleased(event) || super.mouseReleased(event);
     }
 

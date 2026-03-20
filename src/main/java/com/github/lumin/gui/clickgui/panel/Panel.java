@@ -30,6 +30,7 @@ public class Panel implements IComponent {
 
     public Panel() {
         sidebar.setOnSelect(contentPanel::setCurrentCategory);
+        sidebar.setOnHudEditorSelect(contentPanel::openHudEditor);
         contentPanel.setCurrentCategory(sidebar.getSelectedCategory());
     }
 
@@ -92,6 +93,10 @@ public class Panel implements IComponent {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         return sidebar.mouseScrolled(mouseX, mouseY, scrollX, scrollY) || contentPanel.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    public boolean isHudEditorActive() {
+        return contentPanel.isHudEditorActive();
     }
 
     private record PanelLayout(float x, float y, float width, float height, float sidebarWidth, float contentWidth) {

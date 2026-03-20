@@ -32,6 +32,9 @@ public class Sidebar implements IComponent {
     private final Animation selectedHighlightY = new Animation(Easing.EASE_OUT_QUAD, 160L);
     private boolean highlightInitialized;
 
+    private boolean hudEditorSelected = false;
+    private float lastHudEditorX, lastHudEditorY, lastHudEditorW, lastHudEditorH;
+
     private final TranslateComponent gameAccountText = TranslateComponent.create("gui", "gameaccount");
 
     public Sidebar() {
@@ -42,6 +45,12 @@ public class Sidebar implements IComponent {
 
     public void setOnSelect(Consumer<Category> onSelect) {
         this.onSelect = onSelect;
+    }
+
+    private Runnable onHudEditorSelect;
+
+    public void setOnHudEditorSelect(Runnable onHudEditorSelect) {
+        this.onHudEditorSelect = onHudEditorSelect;
     }
 
     public Category getSelectedCategory() {
@@ -182,6 +191,36 @@ public class Sidebar implements IComponent {
                 bar.render(set, mouseX, mouseY, guiScale, alpha);
             }
         }
+
+        // HUD Editor Button at the bottom
+        float hudEditorHeight = 32 * guiScale;
+        lastHudEditorW = width - padding * 2;
+        lastHudEditorH = hudEditorHeight;
+        lastHudEditorX = headX;
+        lastHudEditorY = y + height - padding - hudEditorHeight;
+
+        boolean hudHovered = MouseUtils.isHovering(lastHudEditorX, lastHudEditorY, lastHudEditorW, lastHudEditorH, mouseX, mouseY);
+        set.bottomRoundRect().addRoundRect(lastHudEditorX, lastHudEditorY, lastHudEditorW, lastHudEditorH, 10 * guiScale, hudEditorSelected ? ColorUtils.applyOpacity(new Color(255, 255, 255, 52), alpha) : (hudHovered ? ColorUtils.applyOpacity(new Color(255, 255, 255, 30), alpha) : ColorUtils.applyOpacity(new Color(35, 35, 35, 180), alpha)));
+
+        float hudIconScale = guiScale * 1.2f;
+        String hudIcon = "E"; // Brush icon per user request
+        float hudIconW = set.font().getWidth(hudIcon, hudIconScale, StaticFontLoader.ICONS);
+        float hudIconH = set.font().getHeight(hudIconScale, StaticFontLoader.ICONS);
+        float thumbX = lastHudEditorX + 8 * guiScale;
+        float thumbY = lastHudEditorY + (lastHudEditorH - hudIconH) / 2f;
+        set.font().addText(hudIcon, thumbX, thumbY, hudIconScale, hudEditorSelected || hudHovered ? ColorUtils.applyOpacity(Color.WHITE, alpha) : ColorUtils.applyOpacity(Color.GRAY, alpha), StaticFontLoader.ICONS);
+
+        float hudTextX = thumbX + hudIconW + 8 * guiScale;
+        float hudNameScale = guiScale * 0.9f;
+        float hudNameY = lastHudEditorY + (lastHudEditorH - set.font().getHeight(hudNameScale)) / 2f;
+        set.font().addText("HUD Editor", hudTextX, hudNameY, hudNameScale, ColorUtils.applyOpacity(Color.WHITE, alpha));
+    }
+
+    public void setHudEditorSelected(boolean selected) {
+        this.hudEditorSelected = selected;
+        if (selected) {
+            this.selectedCategory = null;
+        }
     }
 
     private class CategoryBar {
@@ -236,6 +275,7 @@ public class Sidebar implements IComponent {
             if (MouseUtils.isHovering(bar.x, bar.y, bar.width, bar.height, event.x(), event.y())) {
                 if (selectedCategory != bar.category) {
                     selectedCategory = bar.category;
+                    hudEditorSelected = false;
                     if (onSelect != null) {
                         onSelect.accept(selectedCategory);
                     }
@@ -244,6 +284,19 @@ public class Sidebar implements IComponent {
                 return true;
             }
         }
+
+        if (MouseUtils.isHovering(lastHudEditorX, lastHudEditorY, lastHudEditorW, lastHudEditorH, event.x(), event.y())) {
+            if (!hudEditorSelected) {
+                hudEditorSelected = true;
+                selectedCategory = null;
+                if (onHudEditorSelect != null) {
+                    onHudEditorSelect.run();
+                }
+                mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            }
+            return true;
+        }
+
         return false;
     }
 

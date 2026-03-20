@@ -3,6 +3,8 @@ package com.github.lumin.modules.impl.render;
 import com.github.lumin.graphics.renderers.ShadowRenderer;
 import com.github.lumin.graphics.renderers.TextRenderer;
 import com.github.lumin.graphics.text.StaticFontLoader;
+import com.github.lumin.gui.element.Element;
+import com.github.lumin.gui.element.ElementManager;
 import com.github.lumin.managers.ModuleManager;
 import com.github.lumin.modules.Category;
 import com.github.lumin.modules.Module;
@@ -10,6 +12,7 @@ import com.github.lumin.settings.impl.BoolSetting;
 import com.github.lumin.settings.impl.ColorSetting;
 import com.github.lumin.settings.impl.DoubleSetting;
 import com.google.common.base.Suppliers;
+import net.minecraft.client.gui.GuiGraphics;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
@@ -35,9 +38,14 @@ public class ModuleList extends Module {
     private final Supplier<TextRenderer> textRendererSupplier = Suppliers.memoize(TextRenderer::new);
     private final Supplier<ShadowRenderer> shadowRendererSupplier = Suppliers.memoize(ShadowRenderer::new);
 
+    private final Element element = ElementManager.INSTANCE.addElement(this);
+
     @SubscribeEvent
     private void onRenderGui(RenderGuiEvent.Post event) {
         if (nullCheck()) return;
+        GuiGraphics graphics = event.getGuiGraphics();
+
+        element.preRender(graphics);
 
         List<Module> enabledModules = ModuleManager.INSTANCE.getModules().stream()
                 .filter(Module::isEnabled)
@@ -50,7 +58,6 @@ public class ModuleList extends Module {
         TextRenderer textRenderer = textRendererSupplier.get();
         ShadowRenderer shadowRenderer = shadowRendererSupplier.get();
 
-        float screenWidth = mc.getWindow().getGuiScaledWidth();
         float moduleScale = scale.getValue().floatValue();
 
         List<ItemInfo> items = new ArrayList<>();
@@ -71,10 +78,12 @@ public class ModuleList extends Module {
             items.add(new ItemInfo(module, text, boxWidth, boxHeight, totalWidth));
         }
 
-        float currentY = 4.0f * moduleScale;
+        float currentY = element.yPos + 4.0f * moduleScale;
+        float maxW = 0;
 
         for (ItemInfo item : items) {
-            float totalX = screenWidth - item.totalWidth() - 4.0f * moduleScale;
+            if (item.totalWidth() > maxW) maxW = item.totalWidth();
+            float totalX = element.xPos;
             float boxY = currentY;
 
             float textBoxX = totalX;
@@ -105,8 +114,12 @@ public class ModuleList extends Module {
             currentY += item.boxHeight() + 2.0f * moduleScale;
         }
 
+        element.width = (int) maxW;
+        element.height = (int) (currentY - element.yPos);
+
         shadowRenderer.drawAndClear();
         textRenderer.drawAndClear();
+        element.postRender(graphics);
     }
 
     private int getTextWidth(Module module) {

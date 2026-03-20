@@ -30,8 +30,9 @@ public class ContentPanel implements IComponent {
     private Category currentCategory;
 
     private final Animation viewAnimation = new Animation(Easing.EASE_OUT_EXPO, 450L);
-    private final ListViewController listView = new ListViewController();
-    private final SettingsViewController settingsView = new SettingsViewController();
+    private final ListViewController listViewController = new ListViewController();
+    private final SettingsViewController settingsViewController = new SettingsViewController();
+    private final HudEditorViewController hudEditorViewController = new HudEditorViewController();
 
     private float sourceCardX;
     private float sourceCardY;
@@ -45,6 +46,7 @@ public class ContentPanel implements IComponent {
     private enum ViewState {
         LIST,
         SETTINGS,
+        HUD_EDITOR,
         OPENING_SETTINGS,
         CLOSING_SETTINGS
     }
@@ -59,10 +61,10 @@ public class ContentPanel implements IComponent {
     public void setCurrentCategory(Category category) {
         if (this.currentCategory == category) return;
         this.currentCategory = category;
-        closeSettingsRequested = false;
-        settingsView.clearModule();
-        currentState = ViewState.LIST;
         targetState = ViewState.LIST;
+        closeSettingsRequested = false;
+        settingsViewController.clearModule();
+        currentState = ViewState.LIST;
         viewAnimation.setStartValue(0.0f);
         List<Module> modules = new ArrayList<>();
         for (Module module : ModuleManager.INSTANCE.getModules()) {
@@ -70,7 +72,12 @@ public class ContentPanel implements IComponent {
                 modules.add(module);
             }
         }
-        listView.setModules(modules);
+        listViewController.setModules(modules);
+    }
+
+    public void openHudEditor() {
+        hudEditorViewController.refreshElements();
+        targetState = ViewState.HUD_EDITOR;
     }
 
     @Override
@@ -87,15 +94,20 @@ public class ContentPanel implements IComponent {
         }
         set.bottomRoundRect().addRoundRect(x, y, width * guiScale, height * guiScale, 0, radius, radius, 0, new Color(0, 0, 0, 25));
 
-        targetState = settingsView.hasActiveModule() && !closeSettingsRequested ? ViewState.SETTINGS : ViewState.LIST;
+        if (targetState != ViewState.HUD_EDITOR) {
+            targetState = settingsViewController.hasActiveModule() && !closeSettingsRequested ? ViewState.SETTINGS : ViewState.LIST;
+        }
+
         if (currentState != targetState) {
             if (targetState == ViewState.SETTINGS) {
                 currentState = ViewState.OPENING_SETTINGS;
                 viewAnimation.setStartValue(0.0f);
-            } else {
+            } else if (targetState == ViewState.HUD_EDITOR || (currentState == ViewState.SETTINGS && targetState == ViewState.LIST)) {
                 currentState = ViewState.CLOSING_SETTINGS;
                 viewAnimation.setStartValue(1.0f);
                 exitAnimationStarted = false;
+            } else {
+                currentState = targetState;
             }
         }
 
@@ -104,7 +116,7 @@ public class ContentPanel implements IComponent {
             if (viewAnimation.getValue() >= 0.99f) currentState = ViewState.SETTINGS;
             beginPanelClip(set, guiScale);
             renderListView(set, mouseX, mouseY, deltaTicks, alpha);
-            settingsView.render(set, mouseX, mouseY, deltaTicks, alpha, x, y, width, height, guiScale);
+            settingsViewController.render(set, mouseX, mouseY, deltaTicks, alpha, x, y, width, height, guiScale);
             endPanelClip(set);
             return;
         }
@@ -113,27 +125,32 @@ public class ContentPanel implements IComponent {
             closeSettingsRequested = true;
             beginPanelClip(set, guiScale);
             renderListView(set, mouseX, mouseY, deltaTicks, alpha);
-            if (settingsView.hasActiveModule()) {
+            if (settingsViewController.hasActiveModule()) {
                 if (!exitAnimationStarted) {
-                    settingsView.startExitAnimation(sourceCardX, sourceCardY, sourceCardW, sourceCardH);
+                    settingsViewController.startExitAnimation(sourceCardX, sourceCardY, sourceCardW, sourceCardH);
                     exitAnimationStarted = true;
                 }
-                settingsView.render(set, mouseX, mouseY, deltaTicks, alpha, x, y, width, height, guiScale);
-                if (settingsView.isAnimationFinished()) {
-                    currentState = ViewState.LIST;
-                    settingsView.clearModule();
+                settingsViewController.render(set, mouseX, mouseY, deltaTicks, alpha, x, y, width, height, guiScale);
+                if (settingsViewController.isAnimationFinished()) {
+                    currentState = targetState;
+                    settingsViewController.clearModule();
                     closeSettingsRequested = false;
                     exitAnimationStarted = false;
                 }
+            } else {
+                currentState = targetState;
             }
             endPanelClip(set);
             return;
         }
 
-        if (currentState == ViewState.SETTINGS) {
-            settingsView.render(set, mouseX, mouseY, deltaTicks, alpha, x, y, width, height, guiScale);
-        } else {
-            renderListView(set, mouseX, mouseY, deltaTicks, alpha);
+        if (currentState == ViewState.LIST) {
+            Module suppressModule = currentState == ViewState.LIST ? null : settingsViewController.getModule();
+            listViewController.render(set, mouseX, mouseY, deltaTicks, alpha, x, y, width, height, guiScale, suppressModule);
+        } else if (currentState == ViewState.SETTINGS || currentState == ViewState.OPENING_SETTINGS || currentState == ViewState.CLOSING_SETTINGS) {
+            settingsViewController.render(set, mouseX, mouseY, deltaTicks, alpha, x, y, width, height, guiScale);
+        } else if (currentState == ViewState.HUD_EDITOR) {
+            hudEditorViewController.render(set, mouseX, mouseY, deltaTicks, alpha, x, y, width, height, guiScale);
         }
     }
 
@@ -147,75 +164,98 @@ public class ContentPanel implements IComponent {
                 ColorSettingComponent.closeActivePicker();
                 return true;
             }
-            boolean handled = settingsView.mouseClicked(event, focused, x, y, width, height, guiScale);
-            if (settingsView.consumeExitRequest()) closeSettingsRequested = true;
+            boolean handled = settingsViewController.mouseClicked(event, focused, x, y, width, height, guiScale);
+            if (settingsViewController.consumeExitRequest()) closeSettingsRequested = true;
             return handled;
         }
 
         if (!MouseUtils.isHovering(x, y, width * guiScale, height * guiScale, event.x(), event.y())) {
-            listView.clickOutside();
-            settingsView.clickOutside();
+            listViewController.clickOutside();
+            settingsViewController.clickOutside();
+            hudEditorViewController.clickOutside();
             return false;
         }
 
-        if (currentState == ViewState.SETTINGS) {
-            boolean handled = settingsView.mouseClicked(event, focused, x, y, width, height, guiScale);
-            if (settingsView.consumeExitRequest()) closeSettingsRequested = true;
+        if (currentState == ViewState.LIST) {
+            boolean handled = listViewController.mouseClicked(event, focused, x, y, width, height, guiScale);
+            ListViewController.OpenRequest openRequest = listViewController.consumeOpenRequest();
+            if (openRequest == null) return handled;
+
+            closeSettingsRequested = false;
+            sourceCardX = openRequest.sourceX();
+            sourceCardY = openRequest.sourceY();
+            sourceCardW = openRequest.sourceW();
+            sourceCardH = openRequest.sourceH();
+            settingsViewController.openModule(openRequest.module(), sourceCardX, sourceCardY, sourceCardW, sourceCardH, x, y, width, height, guiScale);
+            currentState = ViewState.OPENING_SETTINGS;
+            viewAnimation.setStartValue(0.0f);
+            return true;
+        } else if (currentState == ViewState.SETTINGS) {
+            boolean handled = settingsViewController.mouseClicked(event, focused, x, y, width, height, guiScale);
+            if (settingsViewController.consumeExitRequest()) closeSettingsRequested = true;
             return handled;
+        } else if (currentState == ViewState.HUD_EDITOR) {
+            return hudEditorViewController.mouseClicked(event, focused, x, y, width, height, guiScale);
         }
-
-        if (currentState != ViewState.LIST) return false;
-        boolean handled = listView.mouseClicked(event, focused, x, y, width, height, guiScale);
-        ListViewController.OpenRequest openRequest = listView.consumeOpenRequest();
-        if (openRequest == null) return handled;
-
-        closeSettingsRequested = false;
-        sourceCardX = openRequest.sourceX();
-        sourceCardY = openRequest.sourceY();
-        sourceCardW = openRequest.sourceW();
-        sourceCardH = openRequest.sourceH();
-        settingsView.openModule(openRequest.module(), sourceCardX, sourceCardY, sourceCardW, sourceCardH, x, y, width, height, guiScale);
-        currentState = ViewState.OPENING_SETTINGS;
-        viewAnimation.setStartValue(0.0f);
-        return true;
+        return false;
     }
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
         if (isTransitioning()) return true;
-        if (currentState == ViewState.SETTINGS)
-            return settingsView.mouseReleased(event, x, y, width, height, getGuiScale());
-        if (currentState == ViewState.LIST) return listView.mouseReleased(event, x, y, width, height, getGuiScale());
+        if (currentState == ViewState.LIST) {
+            return listViewController.mouseReleased(event, x, y, width, height, getGuiScale());
+        } else if (currentState == ViewState.SETTINGS) {
+            return settingsViewController.mouseReleased(event, x, y, width, height, getGuiScale());
+        } else if (currentState == ViewState.HUD_EDITOR) {
+            return hudEditorViewController.mouseReleased(event, x, y, width, height, getGuiScale());
+        }
         return false;
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (isTransitioning()) return true;
-        if (currentState == ViewState.SETTINGS) return settingsView.mouseScrolled(mouseX, mouseY, scrollY);
-        if (currentState == ViewState.LIST) return listView.mouseScrolled(mouseX, mouseY, scrollY);
+        if (currentState == ViewState.SETTINGS) return settingsViewController.mouseScrolled(mouseX, mouseY, scrollY);
+        if (currentState == ViewState.LIST) return listViewController.mouseScrolled(mouseX, mouseY, scrollY);
+        else if (currentState == ViewState.HUD_EDITOR) {
+            float guiScale = getGuiScale();
+            return hudEditorViewController.mouseScrolled(mouseX, mouseY, scrollY, guiScale);
+        }
         return false;
     }
 
     @Override
     public boolean keyPressed(KeyEvent event) {
         if (isTransitioning()) return true;
-        if (currentState == ViewState.SETTINGS) return settingsView.keyPressed(event);
-        if (currentState == ViewState.LIST) return listView.keyPressed(event);
+        if (currentState == ViewState.SETTINGS) return settingsViewController.keyPressed(event);
+        if (currentState == ViewState.LIST) return listViewController.keyPressed(event);
+        if (currentState == ViewState.HUD_EDITOR) {
+            return hudEditorViewController.keyPressed(event);
+        }
         return false;
     }
 
     @Override
     public boolean charTyped(CharacterEvent event) {
         if (isTransitioning()) return true;
-        if (currentState == ViewState.SETTINGS) return settingsView.charTyped(event);
-        if (currentState == ViewState.LIST) return listView.charTyped(event);
+        if (currentState == ViewState.LIST) {
+            return listViewController.charTyped(event);
+        } else if (currentState == ViewState.SETTINGS) {
+            return settingsViewController.charTyped(event);
+        } else if (currentState == ViewState.HUD_EDITOR) {
+            return hudEditorViewController.charTyped(event);
+        }
         return false;
     }
 
     private void renderListView(RendererSet set, int mouseX, int mouseY, float deltaTicks, float alpha) {
-        Module suppressModule = currentState == ViewState.LIST ? null : settingsView.getModule();
-        listView.render(set, mouseX, mouseY, deltaTicks, alpha, x, y, width, height, getGuiScale(), suppressModule);
+        Module suppressModule = currentState == ViewState.LIST ? null : settingsViewController.getModule();
+        listViewController.render(set, mouseX, mouseY, deltaTicks, alpha, x, y, width, height, getGuiScale(), suppressModule);
+    }
+
+    public boolean isHudEditorActive() {
+        return currentState == ViewState.HUD_EDITOR;
     }
 
     private boolean isTransitioning() {
