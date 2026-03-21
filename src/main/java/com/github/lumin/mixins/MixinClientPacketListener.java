@@ -17,6 +17,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Objects;
+
 @Mixin(ClientPacketListener.class)
 public abstract class MixinClientPacketListener extends ClientCommonPacketListenerImpl {
 
@@ -48,7 +50,7 @@ public abstract class MixinClientPacketListener extends ClientCommonPacketListen
     @Inject(method = "handleSoundEvent", at = @At("HEAD"), cancellable = true)
     private void onHandleSoundEvent(ClientboundSoundPacket packet, CallbackInfo ci) {
         if (minecraft.player == null || minecraft.level == null) return;
-        String soundId = BuiltInRegistries.SOUND_EVENT.getKey(packet.getSound().value()).toString();
+        String soundId = Objects.requireNonNull(BuiltInRegistries.SOUND_EVENT.getKey(packet.getSound().value())).toString();
         if (ElytraFly.INSTANCE.shouldVisualSpoof() && soundId.startsWith("minecraft:item.armor.equip_")) {
             ci.cancel();
         }
