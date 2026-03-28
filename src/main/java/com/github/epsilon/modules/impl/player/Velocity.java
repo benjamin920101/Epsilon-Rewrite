@@ -26,6 +26,7 @@ import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -94,6 +95,27 @@ public class Velocity extends Module {
     @SubscribeEvent
     public void onPacket(PacketEvent.Receive event) {
         switch (mode.getValue()) {
+            case Vanilla -> {
+                if (nullCheck()) return;
+
+                if (event.getPacket() instanceof ClientboundSetEntityMotionPacket packet && packet.id() == mc.player.getId()) {
+                    event.setCanceled(true);
+                    return;
+                }
+
+                if (explosion.getValue() && event.getPacket() instanceof ClientboundExplodePacket packet) {
+                    event.setPacket(new ClientboundExplodePacket(
+                            packet.center(),
+                            packet.radius(),
+                            packet.blockCount(),
+                            Optional.empty(),
+                            packet.explosionParticle(),
+                            packet.explosionSound(),
+                            packet.blockParticles()
+                    ));
+                }
+            }
+
             case NoXZ -> {
                 if (event.getPacket() instanceof ClientboundPlayerPositionPacket && stage == VelocityStage.NONE) {
                     lag = true;

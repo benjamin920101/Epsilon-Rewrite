@@ -41,8 +41,11 @@ public class FakePlayer extends Module {
         super("FakePlayer", Category.PLAYER);
     }
 
-    private static final int FAKE_PLAYER_ID = -917813;
-    private static final int MAX_RECORDED_STATES = 20 * 60 * 5;
+    private enum HealingMode {
+        Vanilla,
+        Fast,
+        Off
+    }
 
     private final StringSetting name = stringSetting("Name", "王宁");
     private final BoolSetting copyInventory = boolSetting("CopyInventory", true);
@@ -56,6 +59,9 @@ public class FakePlayer extends Module {
     private final BoolSetting explosionDamage = boolSetting("ExplosionDamage", true);
     private final BoolSetting disableOnDeath = boolSetting("DisableOnDeath", true);
     private final EnumSetting<HealingMode> healingMode = enumSetting("HealingMode", HealingMode.Vanilla);
+
+    private static final int FAKE_PLAYER_ID = -917813;
+    private static final int MAX_RECORDED_STATES = 20 * 60 * 5;
 
     private RemotePlayer fakePlayer;
     private int playbackIndex;
@@ -216,7 +222,7 @@ public class FakePlayer extends Module {
     private void spawnFakePlayer() {
         removeFakePlayer();
 
-        String fakeName = name.getValue().isBlank() ? "BC_zxy" : name.getValue();
+        String fakeName = name.getValue().isBlank() ? "滚木" : name.getValue();
         UUID uuid = UUID.nameUUIDFromBytes(("epsilon:fake_player:" + fakeName).getBytes(StandardCharsets.UTF_8));
         RemotePlayer player = new RemotePlayer(mc.level, new GameProfile(uuid, fakeName));
 
@@ -408,12 +414,6 @@ public class FakePlayer extends Module {
 
     private boolean isCriticalAttack(Player attacker, Entity target) {
         return attacker.fallDistance > 0.0f && !attacker.onGround() && !attacker.onClimbable() && !attacker.isInWater() && !attacker.isPassenger() && !attacker.isSprinting() && target instanceof Player;
-    }
-
-    private enum HealingMode {
-        Vanilla,
-        Fast,
-        Off
     }
 
     private record PlayerState(double x, double y, double z, float yaw, float pitch, float headYaw, float bodyYaw,
