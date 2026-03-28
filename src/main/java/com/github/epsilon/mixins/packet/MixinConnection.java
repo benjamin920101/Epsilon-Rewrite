@@ -4,67 +4,43 @@ import com.github.epsilon.events.PacketEvent;
 import com.github.epsilon.utils.network.PacketUtils;
 import io.netty.channel.ChannelFutureListener;
 import net.minecraft.network.Connection;
+import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundBundlePacket;
 import net.neoforged.neoforge.common.NeoForge;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(Connection.class)
 public class MixinConnection {
 
     @Shadow
-    public void send(Packet<?> packet, @Nullable ChannelFutureListener sendListener) {
+    private void sendPacket(Packet<?> packet, @Nullable ChannelFutureListener listener, boolean flush) {
     }
 
-    @ModifyVariable(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V", at = @At("HEAD"), argsOnly = true)
-    private Packet<?> onReceivePacket(Packet<?> packet) {
-        if (packet instanceof ClientboundBundlePacket bundle) {
-            List<Packet<? super ClientGamePacketListener>> packets = new ArrayList<>();
-            for (Packet<? super ClientGamePacketListener> subPacket : bundle.subPackets()) {
-                PacketEvent.Receive receive = NeoForge.EVENT_BUS.post(new PacketEvent.Receive(subPacket));
-                if (!receive.isCanceled()) {
-                    packets.add((Packet<? super ClientGamePacketListener>) receive.getPacket());
-                }
-            }
-            return new ClientboundBundlePacket(packets);
-        }
-
-        PacketEvent.Receive receive = NeoForge.EVENT_BUS.post(new PacketEvent.Receive(packet));
-        if (receive.isCanceled()) {
-            return null;
-        }
-
-        return receive.getPacket();
+    @Shadow
+    private static <T extends PacketListener> void genericsFtw(Packet<T> packet, PacketListener listener) {
     }
 
-    @Inject(method = "send(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;)V", at = @At("HEAD"), cancellable = true)
-    private void onSendPacket(Packet<?> packet, @Nullable ChannelFutureListener sendListener, CallbackInfo ci) {
+    @Redirect(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;genericsFtw(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;)V"))
+    private void onReceivePacket(Packet<?> packet, PacketListener listener) {
+        PacketEvent.Receive event = NeoForge.EVENT_BUS.post(new PacketEvent.Receive(packet));
+        if (!event.isCanceled()) {
+            genericsFtw(event.getPacket(), listener);
+        }
+    }
+
+    @Redirect(method = "send(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;Z)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;sendPacket(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;Z)V"))
+    private void onSendPacket(Connection instance, Packet<?> packet, @Nullable ChannelFutureListener listener, boolean flush) {
         if (PacketUtils.bypassPackets.contains(packet)) {
             PacketUtils.bypassPackets.remove(packet);
-            send(packet, sendListener);
+            sendPacket(packet, listener, flush);
         } else {
-            PacketEvent.Send sendEvent = new PacketEvent.Send(packet);
-            if (NeoForge.EVENT_BUS.post(sendEvent).isCanceled()) {
-                ci.cancel();
-                return;
-            }
-            /*
-              给event.setPacket后的包添加到bypassPackets队列里发出去，不然Minecraft还是会发原来的包出去
-             */
-            if (sendEvent.getPacket() != packet) {
-                ci.cancel();
-                PacketUtils.bypassPackets.add(sendEvent.getPacket());
-                send(sendEvent.getPacket(), sendListener);
+            PacketEvent.Send event = new PacketEvent.Send(packet);
+            if (!NeoForge.EVENT_BUS.post(event).isCanceled()) {
+                this.sendPacket(event.getPacket(), listener, flush);
             }
         }
     }

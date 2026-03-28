@@ -28,6 +28,14 @@ public class TimerUtils {
         return passedMillise((long) ticks * 50L);
     }
 
+    public boolean every(long ms) {
+        if (passedMillise(ms)) {
+            reset();
+            return true;
+        }
+        return false;
+    }
+
     public boolean passedMillise(double ms) {
         return passedMillise((long) ms);
     }
