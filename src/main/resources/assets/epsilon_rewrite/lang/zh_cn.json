@@ -314,6 +314,10 @@
   "epsilon.modules.packetmine.mode.packet": "数据包",
   "epsilon.modules.packetmine.mode.griminstant": "Grim瞬时",
   "epsilon.modules.packetmine.mode.damage": "伤害",
+  "epsilon.modules.packetmine.mode.instant": "瞬时",
+  "epsilon.modules.packetmine.doublemine": "双重挖掘",
+  "epsilon.modules.packetmine.holdtomine": "长按挖掘",
+  "epsilon.modules.packetmine.autotool": "自动工具",
   "epsilon.modules.packetmine.range": "范围",
   "epsilon.modules.packetmine.rotate": "旋转",
   "epsilon.modules.packetmine.strictdirection": "严格方向",
@@ -407,9 +411,10 @@
   "epsilon.modules.velocity.debug": "调试",
   "epsilon.modules.velocity.maxdelaytime": "最大延迟时间",
   "epsilon.modules.velocity.mode": "模式",
+  "epsilon.modules.velocity.mode.cancel": "取消",
   "epsilon.modules.velocity.mode.legit": "合法",
   "epsilon.modules.velocity.mode.noxz": "无水平",
-  "epsilon.modules.velocity.mode.vanilla": "原版",
+  "epsilon.modules.velocity.servermotion": "服务端移动",
   "epsilon.modules.velocity.noblockpush": "无方块推动",
   "epsilon.modules.velocity.noentitypush": "无实体推动",
   "epsilon.modules.velocity.nowaterpush": "无水流推动",
@@ -418,5 +423,7 @@
   "epsilon.modules.vclip.mode": "模式",
   "epsilon.modules.vclip.mode.glitch": "Glitch",
   "epsilon.modules.vclip.mode.teleport": "传送",
-  "epsilon.modules.vclip.mode.jump": "跳跃"
+  "epsilon.modules.vclip.mode.jump": "跳跃",
+  "epsilon.modules.usecooldown": "使用冷却",
+  "epsilon.modules.usecooldown.cooldown": "冷却时间"
 }

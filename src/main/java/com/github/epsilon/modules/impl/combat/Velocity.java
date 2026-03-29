@@ -120,7 +120,9 @@ public class Velocity extends Module {
                     lag = true;
                     return;
                 }
-                if (event.getPacket() instanceof ClientboundSetEntityMotionPacket(int id, Vec3 movement) && id == mc.player.getId()) {
+                if (event.getPacket() instanceof ClientboundSetEntityMotionPacket(
+                        int id, Vec3 movement
+                ) && id == mc.player.getId()) {
                     if (stage == VelocityStage.NONE) {
                         if (!lag) {
                             stage = VelocityStage.DELAY;

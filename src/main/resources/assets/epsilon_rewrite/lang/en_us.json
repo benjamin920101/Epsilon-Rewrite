@@ -314,6 +314,10 @@
   "epsilon.modules.packetmine.mode.packet": "Packet",
   "epsilon.modules.packetmine.mode.griminstant": "Grim Instant",
   "epsilon.modules.packetmine.mode.damage": "Damage",
+  "epsilon.modules.packetmine.mode.instant": "Instant",
+  "epsilon.modules.packetmine.doublemine": "Double Mine",
+  "epsilon.modules.packetmine.holdtomine": "Hold To Mine",
+  "epsilon.modules.packetmine.autotool": "Auto Tool",
   "epsilon.modules.packetmine.range": "Range",
   "epsilon.modules.packetmine.rotate": "Rotate",
   "epsilon.modules.packetmine.strictdirection": "Strict Direction",
@@ -407,9 +411,10 @@
   "epsilon.modules.velocity.debug": "Debug",
   "epsilon.modules.velocity.maxdelaytime": "Max Delay Time",
   "epsilon.modules.velocity.mode": "Mode",
+  "epsilon.modules.velocity.mode.cancel": "Cancel",
   "epsilon.modules.velocity.mode.legit": "Legit",
   "epsilon.modules.velocity.mode.noxz": "No XZ",
-  "epsilon.modules.velocity.mode.vanilla": "Vanilla",
+  "epsilon.modules.velocity.servermotion": "Server Motion",
   "epsilon.modules.velocity.noblockpush": "No Block Push",
   "epsilon.modules.velocity.noentitypush": "No Entity Push",
   "epsilon.modules.velocity.nowaterpush": "No Water Push",
@@ -418,5 +423,7 @@
   "epsilon.modules.vclip.mode": "Mode",
   "epsilon.modules.vclip.mode.glitch": "Glitch",
   "epsilon.modules.vclip.mode.teleport": "Teleport",
-  "epsilon.modules.vclip.mode.jump": "Jump"
+  "epsilon.modules.vclip.mode.jump": "Jump",
+  "epsilon.modules.usecooldown": "Use Cooldown",
+  "epsilon.modules.usecooldown.cooldown": "Cooldown"
 }

@@ -51,6 +51,7 @@ public class ModuleManager {
                 Scaffold.INSTANCE,
                 Sprint.INSTANCE,
                 Stuck.INSTANCE,
+                UseCooldown.INSTANCE,
                 VClip.INSTANCE,
 
                 // Render

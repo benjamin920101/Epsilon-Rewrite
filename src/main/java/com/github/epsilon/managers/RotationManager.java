@@ -357,15 +357,15 @@ public class RotationManager {
         }
     }
 
-    private boolean isMovementFixEnabled() {
-        return MovementFix.INSTANCE.isEnabled();
-    }
-
     @SubscribeEvent
     public void onFallFlying(FallFlyingEvent event) {
-        if (rotations != null) {
+        if (active && isMovementFixEnabled() && rotations != null) {
             event.setPitch(rotations.y);
         }
+    }
+
+    private boolean isMovementFixEnabled() {
+        return MovementFix.INSTANCE.isEnabled();
     }
 
     @SubscribeEvent
