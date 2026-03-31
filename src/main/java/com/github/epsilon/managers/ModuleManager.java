@@ -64,6 +64,7 @@ public class ModuleManager {
                 ModuleList.INSTANCE,
                 NameTags.INSTANCE,
                 NoRender.INSTANCE,
+                PopChams.INSTANCE,
 
                 // World
                 AutoFarm.INSTANCE,

@@ -9,6 +9,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 public class AutoSprint extends Module {
+
     public static final AutoSprint INSTANCE = new AutoSprint();
 
     private AutoSprint() {
@@ -23,7 +24,12 @@ public class AutoSprint extends Module {
     @SubscribeEvent
     private void onClientTick(ClientTickEvent.Pre event) {
         if (nullCheck()) return;
-        mc.player.setSprinting(mc.player.getFoodData().getFoodLevel() > 6 && !mc.player.horizontalCollision && mc.player.input.getMoveVector().y > 0 && (!mc.player.isUsingItem() || !stopWhileUsing.getValue()) && (!KillAura.INSTANCE.isEnabled() || KillAura.INSTANCE.target == null || !pauseWhileAura.getValue()));
+        mc.player.setSprinting(
+                mc.player.getFoodData().getFoodLevel() > 6
+                        && !mc.player.horizontalCollision
+                        && mc.player.input.getMoveVector().y > 0
+                        && (!mc.player.isUsingItem() || !stopWhileUsing.getValue())
+                        && (!pauseWhileAura.getValue() || !KillAura.INSTANCE.isEnabled() || KillAura.INSTANCE.target == null));
     }
 
 }

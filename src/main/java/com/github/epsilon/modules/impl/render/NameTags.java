@@ -9,6 +9,7 @@ import com.github.epsilon.settings.impl.BoolSetting;
 import com.github.epsilon.settings.impl.DoubleSetting;
 import com.github.epsilon.utils.render.WorldToScreen;
 import com.google.common.base.Suppliers;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -148,7 +149,7 @@ public class NameTags extends Module {
     }
 
     private float getPerspectiveScale(float baseScale, float projectedHeight) {
-        float perspectiveFactor = Math.clamp(projectedHeight / 36.0f, 0.55f, 2.2f);
+        float perspectiveFactor = Mth.clamp(projectedHeight / 36.0f, 0.55f, 2.2f);
         return baseScale * perspectiveFactor;
     }
 
@@ -171,6 +172,5 @@ public class NameTags extends Module {
             float lineGap
     ) {
     }
-
 
 }
