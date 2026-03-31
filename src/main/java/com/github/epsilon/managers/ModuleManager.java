@@ -40,6 +40,7 @@ public class ModuleManager {
                 Velocity.INSTANCE,
 
                 // Player
+                AutoSprint.INSTANCE,
                 AutoTool.INSTANCE,
                 BreakCooldown.INSTANCE,
                 Disabler.INSTANCE,
@@ -52,7 +53,6 @@ public class ModuleManager {
                 Phase.INSTANCE,
                 SafeWalk.INSTANCE,
                 Scaffold.INSTANCE,
-                Sprint.INSTANCE,
                 Stuck.INSTANCE,
                 UseCooldown.INSTANCE,
                 VClip.INSTANCE,

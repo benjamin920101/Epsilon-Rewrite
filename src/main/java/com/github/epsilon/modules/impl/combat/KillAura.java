@@ -70,7 +70,7 @@ public class KillAura extends Module {
     private final DoubleSetting fireflyShaking = doubleSetting("FireflyShaking", 1.8, 0.25, 10.0, 0.25, () -> esp.getValue() && espMode.is(ESPMode.Firefly));
     private final DoubleSetting fireflyAmplitude = doubleSetting("FireflyAmplitude", 3.0, 0.0, 10.0, 0.25, () -> esp.getValue() && espMode.is(ESPMode.Firefly));
 
-    private LivingEntity target;
+    public LivingEntity target;
     private final List<LivingEntity> targets = new ArrayList<>();
     private boolean rotationReady;
 
